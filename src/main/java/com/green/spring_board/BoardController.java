@@ -13,9 +13,16 @@ public class BoardController {
         this.boardRepository = boardRepository;
     }
 
+    // 전체조회
     @GetMapping
     public List<Boards> getBoards(){
         return boardRepository.findAll();
+    }
+
+    // 상세조회
+    @GetMapping("/{id}")
+    public Boards getBoardDetail(@PathVariable int id){
+        return boardRepository.findById(id).get();
     }
 
     // 삽입
@@ -32,6 +39,26 @@ public class BoardController {
     }
 
     // 수정
+    @PatchMapping("/{id}")
+    public void updateBoard(
+            @PathVariable int id,
+            @RequestBody BoardCreateRequest boardCreateRequest
+    ){
+        Boards board = boardRepository.findById(id).get();
+        if(boardCreateRequest.getTitle() != null) {
+            board.setTitle(boardCreateRequest.getTitle());
+        }
+
+        if(boardCreateRequest.getContent() != null) {
+            board.setContent(boardCreateRequest.getContent());
+        }
+        boardRepository.save(board);
+    }
+
 
     // 삭제
+    @DeleteMapping("/{id}")
+    public void deleteBoard(@PathVariable int id){
+        boardRepository.deleteById(id);
+    }
 }
