@@ -32,6 +32,7 @@ public class BoardController {
         }
 
         Boards board = optionalBoard.get();
+
         board.setHits(board.getHits() + 1);
         boardRepository.save(board);
 
@@ -67,6 +68,10 @@ public class BoardController {
             @PathVariable int id,
             @RequestBody BoardCreateRequest boardCreateRequest
     ){
+        Optional<Boards> optionalBoards = boardRepository.findById(id);
+        if(optionalBoards.isEmpty()){
+            return ResponseEntity.notFound().build();
+        }
         Boards board = boardRepository.findById(id).get();
 
         if(boardCreateRequest.getTitle() != null && !boardCreateRequest.getTitle().isBlank()) {
