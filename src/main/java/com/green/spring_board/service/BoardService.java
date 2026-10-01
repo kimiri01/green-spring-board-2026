@@ -1,54 +1,45 @@
-package com.green.spring_board;
+package com.green.spring_board.service;
 
+import com.green.spring_board.dto.BoardCreateRequest;
+import com.green.spring_board.entity.Boards;
+import com.green.spring_board.repository.BoardRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Service;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
-@RestController
-@RequestMapping("/api/board")
+@Service
 @AllArgsConstructor
-public class BoardController {
-    private  BoardRepository boardRepository;
+public class BoardService {
+    private BoardRepository boardRepository;
 
-    // 전체조회
-    @GetMapping
-    public ResponseEntity<List<Boards>> getBoards(){
-        return ResponseEntity.ok(
-                boardRepository.findAll()
-        );
-//        return boardRepository.findAll();
+    // 전체 조회
+    public List<Boards> getAllBoards() {
+        return boardRepository.findAll();
     }
-    // 상세조회
-    @GetMapping("/{id}")
-    public ResponseEntity <Boards> getBoardDetail(@PathVariable int id){
+
+    // 상세 조회
+    public Boards getBoard(int id) {
         Optional<Boards> optionalBoard = boardRepository.findById(id);
         if(optionalBoard.isEmpty()) {
             // 요청한 게시글을 찾지 못한 경우
-            return ResponseEntity.notFound().build();
+            return null;
         }
-
         Boards board = optionalBoard.get();
 
         board.setHits(board.getHits() + 1);
         boardRepository.save(board);
-
-        return ResponseEntity.ok(board);
+        return board;
     }
 
     // 삽입
-    @PostMapping
-    public ResponseEntity<Boards> createBoard(
-            @RequestBody BoardCreateRequest boardCreateRequest) {
-
+    public int createBoard(BoardCreateRequest boardCreateRequest) {
         if (boardCreateRequest.getTitle() == null || boardCreateRequest.getTitle().isBlank()) {
-            return ResponseEntity.badRequest().build();
+            return -1;
         }
         if (boardCreateRequest.getContent() == null || boardCreateRequest.getContent().isBlank()) {
-            return ResponseEntity.badRequest().build();
+            return -1;
         }
 
         Boards board = new Boards();
@@ -56,45 +47,37 @@ public class BoardController {
         board.setContent(boardCreateRequest.getContent());
 
         Boards saveBoard = boardRepository.save(board);
-        int newBoardId = saveBoard.getId();
-        URI location = URI.create("/api/board/" + newBoardId);
 
-        return ResponseEntity.created(location).body(board);
+        return saveBoard.getId();
     }
 
     // 수정
-    @PatchMapping("/{id}")
-    public ResponseEntity<Void> updateBoard(
-            @PathVariable int id,
-            @RequestBody BoardCreateRequest boardCreateRequest
-    ){
+    public int updateBoard(int id, BoardCreateRequest boardCreateRequest) {
         Optional<Boards> optionalBoards = boardRepository.findById(id);
         if(optionalBoards.isEmpty()){
-            return ResponseEntity.notFound().build();
+            return -1;
         }
         Boards board = boardRepository.findById(id).get();
 
         if(boardCreateRequest.getTitle() != null && !boardCreateRequest.getTitle().isBlank()) {
             board.setTitle(boardCreateRequest.getTitle());
         }
-
         if(boardCreateRequest.getContent() != null && !boardCreateRequest.getContent().isBlank()) {
             board.setContent(boardCreateRequest.getContent());
         }
         boardRepository.save(board);
 
-        return ResponseEntity.ok().build();
+        return 0;
     }
 
-
     // 삭제
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBoard(@PathVariable int id){
+    public int deleteBoard(int id) {
         boolean isExist = boardRepository.existsById(id);
         if(!isExist) {
-            return ResponseEntity.notFound().build();
+            return -1;
         }
+
         boardRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return 0;
     }
 }
