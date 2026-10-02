@@ -34,4 +34,9 @@ public class Board {
 
     @Column(nullable = false, insertable = false, updatable = false)
     private LocalDateTime updatedDatetime;
+
+    // 유저 전체를 넣어 연관 관계를 생성
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }
