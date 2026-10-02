@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 // DB테이블 이름을 넣어라.
 @Table(name = "boards")
@@ -26,4 +28,10 @@ public class Board {
 
     @Column(nullable = false)
     private int hits;
+
+    @Column(nullable = false, insertable = false, updatable = false)
+    private LocalDateTime createdDatetime;
+
+    @Column(nullable = false, insertable = false, updatable = false)
+    private LocalDateTime updatedDatetime;
 }
