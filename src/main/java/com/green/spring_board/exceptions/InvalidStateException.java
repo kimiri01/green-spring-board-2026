@@ -4,7 +4,6 @@ package com.green.spring_board.exceptions;
 //* 현재 상태에서는 해당 작업을 수행할 수 없다.
 public class InvalidStateException extends RuntimeException {
     public InvalidStateException(String message) {
-
         super(message);
     }
 }
