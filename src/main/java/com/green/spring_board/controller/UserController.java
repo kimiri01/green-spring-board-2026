@@ -26,39 +26,20 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<Void> signup(@RequestBody SignupRequest signupRequest) {
-        try {
-            userService.signup(signupRequest);
-            return ResponseEntity.ok().build();
-        }catch (ResourceConflictException e){
-            // DB에 중복된 값이 이미 있을 때 (409 conflict code)
-            // 409 code는 별도 메서드를 지원하지 않아 직접 정해줌
-            return ResponseEntity.status(409).build();
-        }catch (UserRequestException e){
-            return ResponseEntity.badRequest().build();
-        }catch (Exception e){
-            return ResponseEntity.internalServerError().build();
-        }
+        userService.signup(signupRequest);
+        return ResponseEntity.ok().build();
     }
+
     @PostMapping("/login")
     public ResponseEntity<Void> login(
             @Valid @RequestBody LoginRequest loginRequest,
             HttpServletRequest httpServletRequest
     ){
-        //* DTO Valid
-        try {
-            int userId = userService.login(loginRequest);
-            HttpSession session = httpServletRequest.getSession();
-            httpServletRequest.changeSessionId();
-            session.setAttribute("userId", userId);
-            return ResponseEntity.ok().build();
-
-        }catch (ResourceNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }catch (UnauthenticatedException e) {
-            return ResponseEntity.status(401).build();
-        }catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        int userId = userService.login(loginRequest);
+        HttpSession session = httpServletRequest.getSession();
+        httpServletRequest.changeSessionId();
+        session.setAttribute("userId", userId);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/me")
@@ -69,7 +50,7 @@ public class UserController {
         HttpSession session = httpServletRequest.getSession(false);
 
         if(session == null || session.getAttribute("userId") == null) {
-            return ResponseEntity.status(401).build();
+            throw new UnauthenticatedException("로그인이 필요합니다");
         }
 
         // 2. 세션에서 유저 아이디 뽑아옴
@@ -86,7 +67,7 @@ public class UserController {
         HttpSession session = request.getSession(false);
 
         if(session == null || session.getAttribute("userId") == null){
-            return ResponseEntity.status(401).build();
+            throw new UnauthenticatedException("로그인이 필요합니다");
         }
 
         session.invalidate();
@@ -103,22 +84,14 @@ public class UserController {
         HttpSession session = request.getSession(false);
 
         if(session == null || session.getAttribute("userId") == null) {
-            return ResponseEntity.status(401).build();
+            throw new UnauthenticatedException("로그인이 필요합니다");
         }
 
         // 세션에서 요청자의 id를 가져옴
         int userId = (int) session.getAttribute("userId");
 
-        try {
-            userService.updateUserInfo(userId, userUpdateRequest);
-            return ResponseEntity.ok().build();
-        }catch (ResourceNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }catch (ResourceConflictException e) {
-            return ResponseEntity.status(409).build();
-        }catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        userService.updateUserInfo(userId, userUpdateRequest);
+        return ResponseEntity.ok().build();
     }
 
     // 유저 탈퇴
@@ -128,7 +101,7 @@ public class UserController {
     ){
         HttpSession session = request.getSession(false);
         if(session == null || session.getAttribute("userId") == null) {
-            return ResponseEntity.status(401).build();
+            throw new UnauthenticatedException("로그인이 필요합니다");
         }
         int userId = (int) session.getAttribute("userId");
 
