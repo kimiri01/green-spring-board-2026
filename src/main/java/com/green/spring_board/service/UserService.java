@@ -1,6 +1,7 @@
 package com.green.spring_board.service;
 
 import com.green.spring_board.dto.MyInfoResponse;
+import com.green.spring_board.dto.UserUpdateRequest;
 import com.green.spring_board.exceptions.ResourceConflictException;
 import com.green.spring_board.exceptions.UnauthenticatedException;
 import com.green.spring_board.dto.LoginRequest;
@@ -87,7 +88,7 @@ public class UserService {
     }
 
     // 수정
-    public void updateUserInfo(int userId, MyInfoResponse myInfoResponse) {
+    public void updateUserInfo(int userId, UserUpdateRequest userUpdateRequest) {
         // 1. 대상 유저 조회
         Optional<User> userOptional = userRepository.findById(userId);
 
@@ -101,17 +102,17 @@ public class UserService {
         // 사용자가 올린 요청으로 덮어씌운다
         // 보드 했던것처럼 null 이면 수정하지 않기!
         // 2. 이메일 수정
-        if (myInfoResponse.getEmail() != null && !myInfoResponse.getEmail().isBlank()) {
-            if (!myInfoResponse.getEmail().equals(user.getEmail())) {
-                if (userRepository.existsByEmail(myInfoResponse.getEmail())) {
+        if (userUpdateRequest.getEmail() != null && !userUpdateRequest.getEmail().isBlank()) {
+            if (!userUpdateRequest.getEmail().equals(user.getEmail())) {
+                if (userRepository.existsByEmail(userUpdateRequest.getEmail())) {
                     throw new ResourceConflictException("이미 사용 중인 이메일입니다.");
                 }
-                user.setEmail(myInfoResponse.getEmail());
+                user.setEmail(userUpdateRequest.getEmail());
             }
         }
         // 3. 닉네임 수정
-        if (myInfoResponse.getNickname() != null && !myInfoResponse.getNickname().isBlank()) {
-            user.setNickname(myInfoResponse.getNickname());
+        if (userUpdateRequest.getNickname() != null && !userUpdateRequest.getNickname().isBlank()) {
+            user.setNickname(userUpdateRequest.getNickname());
         }
 
         // 4. DB 저장
