@@ -28,5 +28,5 @@ public class Like {
     private Board board;
 
     @Column(nullable = false, insertable = false, updatable = false)
-    private LocalDateTime createDatetime;
+    private LocalDateTime createdDatetime;
 }

@@ -180,17 +180,24 @@ public class BoardService {
         }
         User user = optionalUser.get();
 
+        //* 다시 눌렀을 때 취소
         Optional<Like> likeOptional = likeRepository.findByUserIdAndBoardId(userId, id);
         if(likeOptional.isEmpty()) {
-            // 없으면 좋아요 추가
+            //* 없으면 좋아요 추가
             Like like = new Like();
             like.setUser(user);
             like.setBoard(board);
             likeRepository.save(like);
+
+            board.setLikeCount(board.getLikeCount() + 1);
+            boardRepository.save(board);
         } else {
-            // 있으면 좋아요 삭제
+            //* 있으면 좋아요 삭제
             Like like = likeOptional.get();
             likeRepository.deleteById(like.getId());
+
+            board.setLikeCount(board.getLikeCount() - 1);
+            boardRepository.save(board);
         }
     }
 }
