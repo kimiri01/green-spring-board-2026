@@ -1,9 +1,6 @@
 package com.green.spring_board.controller;
 
-import com.green.spring_board.dto.ApiResponse;
-import com.green.spring_board.dto.BoardResponse;
-import com.green.spring_board.dto.BoardUpdateRequest;
-import com.green.spring_board.dto.BoardCreateRequest;
+import com.green.spring_board.dto.*;
 import com.green.spring_board.exceptions.UnauthenticatedException;
 import com.green.spring_board.service.BoardService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -127,4 +124,19 @@ public class BoardController {
     }
     //* 상세 눌렀을 대 어느 유저들이 이 게시글 좋아요를 눌렀는지
     //* 내가 이 게시글 좋아요 눌렀는지
+
+    @GetMapping("/like/{id}")
+    public ResponseEntity<ApiResponse<LikeDetailResponse>> viewLikeDetails(
+            @PathVariable int id,
+            HttpServletRequest httpServletRequest
+    ){
+        HttpSession session = httpServletRequest.getSession(false);
+
+        if(session == null || session.getAttribute("userId") == null) {
+            throw new UnauthenticatedException("로그인이 필요합니다.");
+        }
+        //* 이 게시글에 좋아요를 누른 유저들의 유저명
+        LikeDetailResponse response = boardService.getLikeDetail(id);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
 }
