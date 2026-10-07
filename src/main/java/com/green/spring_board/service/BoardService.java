@@ -2,6 +2,7 @@ package com.green.spring_board.service;
 
 import com.green.spring_board.dto.BoardResponse;
 import com.green.spring_board.dto.BoardUpdateRequest;
+import com.green.spring_board.entity.Like;
 import com.green.spring_board.entity.User;
 import com.green.spring_board.exceptions.AuthorizationFailureException;
 import com.green.spring_board.exceptions.ResourceNotFoundException;
@@ -9,6 +10,7 @@ import com.green.spring_board.dto.BoardCreateRequest;
 import com.green.spring_board.entity.Board;
 import com.green.spring_board.exceptions.UnauthenticatedException;
 import com.green.spring_board.repository.BoardRepository;
+import com.green.spring_board.repository.LikeRepository;
 import com.green.spring_board.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ import java.util.Optional;
 public class BoardService {
     private BoardRepository boardRepository;
     private UserRepository userRepository;
+    private LikeRepository likeRepository;
 
     // 전체 조회
     public List<BoardResponse> getAllBoards() {
@@ -84,17 +87,14 @@ public class BoardService {
 
     // 내 게시글 조회
     public List<BoardResponse> getMyBoards(int userId) {
-        //* userId 유효성 체크 (해당 유저가 정상적으로 존재하는지)
-        if (userRepository.findById(userId).isEmpty()) {
-            throw new UnauthenticatedException("로그인한 사용자를 찾을 수 없습니다.");
-        }
-
-        //* 내가 작성한 게시글만 조회
         List<Board> boards = boardRepository.findByUserId(userId);
 
-        //* List<Board> -> List<BoardResponse> 변환
+        //* 1. List<BoardResponse> 형태의 빈 리스트 생성
         List<BoardResponse> boardResponses = new ArrayList<>();
+
+        //* 2. Board 개수 만큼 반복하며 new BoardResponse 생성
         for (Board board : boards) {
+            //* 3. 1번에서 만든 리스트에 추가
             boardResponses.add(
                     new BoardResponse(
                             board.getId(),
@@ -164,5 +164,33 @@ public class BoardService {
         }
 
         boardRepository.deleteById(id);
+    }
+
+    // 좋아요
+    public void pressLike(int id, int userId) {
+        Optional<Board> optionalBoard = boardRepository.findById(id);
+        if(optionalBoard.isEmpty()) {
+            throw new ResourceNotFoundException("존재하지않는 게시글입니다.");
+        }
+        Board board = optionalBoard.get();
+
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            throw new ResourceNotFoundException("존재하지않는 유저입니다.");
+        }
+        User user = optionalUser.get();
+
+        Optional<Like> likeOptional = likeRepository.findByUserIdAndBoardId(userId, id);
+        if(likeOptional.isEmpty()) {
+            // 없으면 좋아요 추가
+            Like like = new Like();
+            like.setUser(user);
+            like.setBoard(board);
+            likeRepository.save(like);
+        } else {
+            // 있으면 좋아요 삭제
+            Like like = likeOptional.get();
+            likeRepository.deleteById(like.getId());
+        }
     }
 }
