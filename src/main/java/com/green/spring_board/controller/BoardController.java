@@ -40,6 +40,22 @@ public class BoardController {
             );
     }
 
+    // 내 게시글 조회
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponse<List<BoardResponse>>> getMyBoards(
+            HttpServletRequest httpServletRequest
+    ) {
+        HttpSession session = httpServletRequest.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            throw new UnauthenticatedException("로그인이 필요합니다.");
+        }
+
+        int userId = (int) session.getAttribute("userId");
+        return ResponseEntity.ok(
+                ApiResponse.ok(boardService.getMyBoards(userId))
+        );
+    }
+
     // 삽입
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> createBoard(

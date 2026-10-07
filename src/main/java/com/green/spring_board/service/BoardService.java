@@ -59,7 +59,12 @@ public class BoardService {
             // 요청한 게시글을 찾지 못한 경우
             throw new ResourceNotFoundException("요청한 게시글을 찾지못했습니다.");
         }
+
         Board board = optionalBoard.get();
+
+        if(board.getUser().getId() != id) {
+            throw new AuthorizationFailureException("게시글 작업 권한이 없습니다.");
+        }
 
         User user = board.getUser();
         System.out.println(user.getNickname());
@@ -76,6 +81,36 @@ public class BoardService {
                         board.getUpdatedDatetime()
                 );
     }
+
+    // 내 게시글 조회
+    public List<BoardResponse> getMyBoards(int userId) {
+        //* userId 유효성 체크 (해당 유저가 정상적으로 존재하는지)
+        if (userRepository.findById(userId).isEmpty()) {
+            throw new UnauthenticatedException("로그인한 사용자를 찾을 수 없습니다.");
+        }
+
+        //* 내가 작성한 게시글만 조회
+        List<Board> boards = boardRepository.findByUserId(userId);
+
+        //* List<Board> -> List<BoardResponse> 변환
+        List<BoardResponse> boardResponses = new ArrayList<>();
+        for (Board board : boards) {
+            boardResponses.add(
+                    new BoardResponse(
+                            board.getId(),
+                            board.getTitle(),
+                            board.getContent(),
+                            board.getHits(),
+                            board.getUser().getId(),
+                            board.getUser().getNickname(),
+                            board.getCreatedDatetime(),
+                            board.getUpdatedDatetime()
+                    )
+            );
+        }
+        return boardResponses;
+    }
+
 
     public int createBoard(BoardCreateRequest boardCreateRequest, Integer userId) {
         //* UserId 유효성 체크 (해당 userId의 유저가 정상적으로 존재하는지)
