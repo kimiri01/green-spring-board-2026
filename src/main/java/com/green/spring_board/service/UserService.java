@@ -46,7 +46,7 @@ public class UserService {
     public int login(LoginRequest loginRequest) {
         // 1. 이메일 존재하는건지 확인
         Optional<User> userOptional
-                = userRepository.findAllByEmail(loginRequest.getEmail());
+                = userRepository.findByEmail(loginRequest.getEmail());
 
         if(userOptional.isEmpty()){
             throw new ResourceNotFoundException("User not found");
@@ -88,10 +88,6 @@ public class UserService {
         }
         User user = userOptional.get();
 
-        if(user.getId() != userId) {
-            throw new AuthorizationFailureException("요청작업 권한이 없습니다.");
-        }
-
         if (userUpdateRequest.getEmail() != null
                 && !userUpdateRequest.getEmail().isBlank()
                 && !userUpdateRequest.getEmail().equals(user.getEmail())
@@ -113,10 +109,6 @@ public class UserService {
             throw new ResourceNotFoundException("User not found");
         }
         User user = userOptional.get();
-
-        if(user.getId() != userId) {
-            throw new AuthorizationFailureException("요청작업 권한이 없습니다.");
-        }
         userRepository.delete(user);
     }
 }
