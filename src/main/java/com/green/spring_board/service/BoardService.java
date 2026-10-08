@@ -14,6 +14,10 @@ import com.green.spring_board.repository.BoardRepository;
 import com.green.spring_board.repository.LikeRepository;
 import com.green.spring_board.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -28,8 +32,11 @@ public class BoardService {
     private LikeRepository likeRepository;
 
     // 전체 조회
-    public List<BoardResponse> getAllBoards(int userId) {
-        List<Board> boards = boardRepository.findAll();
+    public Page<BoardResponse> getAllBoards(int userId, int page, int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Board> boards = boardRepository.findAll(pageable);
+
         List<BoardResponse> boardResponses = new ArrayList<>();
         for (Board board : boards) {
             boardResponses.add(
@@ -47,7 +54,7 @@ public class BoardService {
                     )
             );
         }
-        return boardResponses;
+        return new PageImpl<>(boardResponses, pageable, boards.getTotalElements());
     }
 
     // 상세 조회
