@@ -55,7 +55,7 @@ public class CommentService {
             throw new ResourceNotFoundException("Board not found");
         }
 
-        List<Comment> comments = commentRepository.findByBoardId(boardId);
+        List<Comment> comments = commentRepository.findByBoardIdAndIsDeletedFalse(boardId);
 
         List<CommentResponse> commentResponses = new ArrayList<>();
         for(Comment comment : comments){
@@ -78,6 +78,10 @@ public class CommentService {
         }
         Comment comment = optionalComment.get();
 
+        if(comment.isDeleted()){
+            throw new ResourceNotFoundException("삭제된 댓글입니다.");
+        }
+
         if(comment.getUser().getId() != userId) {
             throw new AuthorizationFailureException("수정할 권한이 없습니다.");
         }
@@ -98,6 +102,7 @@ public class CommentService {
         if(comment.getUser().getId() != userId) {
             throw new AuthorizationFailureException("삭제할 권한이 없습니다.");
         }
-        commentRepository.delete(comment);
+        comment.setDeleted(true);
+        commentRepository.save(comment);
     }
 }

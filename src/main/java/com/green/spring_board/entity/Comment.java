@@ -1,10 +1,7 @@
 package com.green.spring_board.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -32,4 +29,7 @@ public class Comment {
 
     @Column(nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdDatetime;
+
+    @Column(nullable = false)
+    private boolean isDeleted;
 }
