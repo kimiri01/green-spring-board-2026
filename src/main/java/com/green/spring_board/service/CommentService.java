@@ -1,9 +1,13 @@
 package com.green.spring_board.service;
 
+import com.green.spring_board.dto.BoardUpdateRequest;
 import com.green.spring_board.dto.CommentCreateRequest;
+import com.green.spring_board.dto.CommentResponse;
+import com.green.spring_board.dto.CommentUpdateRequest;
 import com.green.spring_board.entity.Board;
 import com.green.spring_board.entity.Comment;
 import com.green.spring_board.entity.User;
+import com.green.spring_board.exceptions.AuthorizationFailureException;
 import com.green.spring_board.exceptions.ResourceNotFoundException;
 import com.green.spring_board.repository.BoardRepository;
 import com.green.spring_board.repository.CommentRepository;
@@ -11,6 +15,8 @@ import com.green.spring_board.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -43,5 +49,55 @@ public class CommentService {
         comment.setUser(user);
         comment.setBoard(board);
         commentRepository.save(comment);
+    }
+    public List<CommentResponse> readComments(int boardId){
+        if(!boardRepository.existsById(boardId)) {
+            throw new ResourceNotFoundException("Board not found");
+        }
+
+        List<Comment> comments = commentRepository.findByBoardId(boardId);
+
+        List<CommentResponse> commentResponses = new ArrayList<>();
+        for(Comment comment : comments){
+            CommentResponse commentResponse = new CommentResponse();
+            commentResponse.setCommentId(comment.getId());
+            commentResponse.setContent(comment.getContent());
+            commentResponse.setNickname(comment.getUser().getNickname());
+            commentResponse.setCommentDate(comment.getCreatedDatetime());
+
+            commentResponses.add(commentResponse);
+        }
+        return commentResponses;
+    }
+
+    public void updateComment(int commentId, CommentUpdateRequest commentUpdateRequest, int userId) {
+
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if(optionalComment.isEmpty()){
+            throw new ResourceNotFoundException("댓글을 찾을 수 없습니다.");
+        }
+        Comment comment = optionalComment.get();
+
+        if(comment.getUser().getId() != userId) {
+            throw new AuthorizationFailureException("수정할 권한이 없습니다.");
+        }
+
+        if(commentUpdateRequest.getContent() != null) {
+            comment.setContent(commentUpdateRequest.getContent());
+        }
+        commentRepository.save(comment);
+    }
+
+    public void deleteComment(int commentId, int userId) {
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if(optionalComment.isEmpty()){
+            throw new ResourceNotFoundException("Comment not found.");
+        }
+        Comment comment = optionalComment.get();
+
+        if(comment.getUser().getId() != userId) {
+            throw new AuthorizationFailureException("삭제할 권한이 없습니다.");
+        }
+        commentRepository.delete(comment);
     }
 }
