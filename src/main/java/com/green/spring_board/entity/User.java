@@ -15,11 +15,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Column(name = "username", nullable = false, unique = true)
+    private String username;
 
     @Column(nullable = false)
     private String nickname;

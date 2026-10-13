@@ -14,7 +14,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SignupRequest {
     @NotBlank
-    @Email //* 이메일 입력받을 때 이메일 인식 검증
+    @Size(max = 30)
+    private String username;
+
+    @NotBlank
+    @Email // 이메일 형식인지 검증
     @Size(max = 100)
     private String email;
 
