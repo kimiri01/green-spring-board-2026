@@ -20,6 +20,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -38,6 +39,7 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
 
+    @Transactional
     public void signup(SignupRequest signupRequest) {
         // 아이디가 사용 중인지 확인
         if( userRepository.existsByUsername(signupRequest.getUsername()) ){
@@ -62,6 +64,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public LoginResponse login(LoginRequest loginRequest) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -97,6 +100,7 @@ public class UserService {
         return new LoginResponse(accessToken, refreshToken);
     }
 
+    @Transactional
     public void logout(String accessToken) {
         //* 1. 해당 사용자의 리프레시 토큰 무효화
         //* - DB에서 해당 사용자의 리프레시 토큰을 지운다.
@@ -118,6 +122,7 @@ public class UserService {
         accessTokenBlacklistRepository.save(accessTokenBlacklist);
     }
 
+    @Transactional
     public RefreshResponse refresh(@Valid RefreshRequest refreshRequest) {
         String userRefreshToken = refreshRequest.getRefreshToken();
         //* 리프레시 토큰 위/변조 여부 검증
@@ -153,6 +158,7 @@ public class UserService {
         return new RefreshResponse(accessToken);
     }
 
+    @Transactional
     public MyInfoResponse getUserInfo(){
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username);
@@ -169,6 +175,7 @@ public class UserService {
         return myInfoResponse;
     }
 
+    @Transactional
     public void updateUserInfo(UserUpdateRequest userUpdateRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username);
@@ -188,6 +195,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void deleteUser(){
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username);

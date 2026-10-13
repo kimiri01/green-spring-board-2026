@@ -28,7 +28,7 @@ public class TokenCleanupScheduler {
     //* 매일 오전 3시에 만료된 블랙리스트의 액세스 토큰과
     //* 만료된 리프레시 토큰을 삭제하는 스케줄러
     @Transactional
-    @Scheduled(cron = "* * 3 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 3 * * *", zone = "Asia/Seoul")
     public void cleanTokens() {
         LocalDateTime now = LocalDateTime.now();
         log.warn("토큰 정리 스케줄러가 실행됩니다. 실행 시작 시간: {}", now);
